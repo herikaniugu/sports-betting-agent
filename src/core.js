@@ -14,9 +14,7 @@ const state = {
 
 const OUTCOMES = ['Home', 'Draw', 'Away'];
 const DC_SELECTIONS = ['Home or Draw', 'Draw or Away', 'Home or Away'];
-const pageParams = new URLSearchParams(window.location.search);
-const STATIC_MODE = pageParams.get('api') !== '1' && (pageParams.get('static') === '1' || window.location.protocol === 'file:' || window.location.protocol === 'https:');
-const STATIC_API_MODE = STATIC_MODE && window.location.protocol !== 'file:';
+let MATCHES = [];
 const els = {
   splash: document.getElementById('splash'),
   splashText: document.getElementById('splashText'),

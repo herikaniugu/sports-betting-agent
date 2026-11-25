@@ -14,7 +14,7 @@
     { "src": "^/styles\\.css$", "status": 404 },
     { "src": "^/build\\.js$", "status": 404 },
     { "src": "^/server\\.js$", "status": 404 },
-    { "src": "^/scrape\\.js$", "status": 404 },
+    { "src": "^/data\\.js$", "status": 404 },
     { "src": "^/SKILL\\.md$", "status": 404 },
     { "src": "^/DESIGN\\.md$", "status": 404 },
     { "src": "^/package(-lock)?\\.json$", "status": 404 },
@@ -31,12 +31,6 @@
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
         { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }
-      ]
-    },
-    {
-      "source": "/data.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
       ]
     }
   ]

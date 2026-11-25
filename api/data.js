@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
       scraped: snapshot.scraped,
       live: snapshot.live,
       bySport: snapshot.bySport
-    }, 'public, s-maxage=15, stale-while-revalidate=30');
+    }, 'public, s-maxage=15, must-revalidate');
   } catch (error) {
     send(res, 500, { ok: false, error: error.message });
   }

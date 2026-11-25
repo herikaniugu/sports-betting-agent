@@ -233,9 +233,7 @@ function advisorAnswerWatch() {
     'Best filtered picks',
     ...(picks.length ? numberLines(picks, pickLine) : ['- None match your filters']),
     '',
-    STATIC_MODE
-      ? 'Snapshot saved ' + (lastUpdatedAt ? relativeTime(lastUpdatedAt) + '.' : 'for offline viewing.')
-      : 'Last market refresh ' + (lastUpdatedAt ? relativeTime(lastUpdatedAt) : 'pending') + '. I will keep this updated.'
+    'Last market refresh ' + (lastUpdatedAt ? relativeTime(lastUpdatedAt) : 'pending') + '. I will keep this updated.'
   ].join('\n');
 }
 
@@ -272,11 +270,11 @@ function advisorAnswerMargin() {
 function advisorAnswerUpdates() {
   return [
     'Market freshness',
-    STATIC_MODE ? (STATIC_API_MODE ? 'This static deployment pulls the latest SportyBet snapshot from its own API every 15 seconds and rerenders in place.' : 'This static deployment polls the saved SportyBet snapshot and rerenders when the data file changes.') : 'Auto refresh is active and pulls the latest SportyBet snapshot every 15 seconds.',
+    'Auto refresh is active and pulls the latest SportyBet snapshot from /api/data every 15 seconds.',
     '',
     '- Status: ' + els.dataStatusText.textContent,
     '- Snapshot: ' + (lastUpdatedAt ? relativeTime(lastUpdatedAt) : 'pending'),
-    STATIC_MODE ? (STATIC_API_MODE ? '- The browser polls /api/data; no page redeploy is needed.' : '- The browser polls data.js; the scheduled scraper updates the file.') : '- Your advisor answers stay in sync with each refresh.'
+    '- The browser polls /api/data; no redeploy or data file is needed.'
   ].join('\n');
 }
 
