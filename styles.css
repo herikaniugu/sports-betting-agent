@@ -59,6 +59,9 @@ input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(
 .data-status.error i { background: var(--danger); }
 .bet-on-site { display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 10px; border: 1px solid var(--accent-solid); border-radius: var(--radius); padding: 7px 10px; color: #fff; background: var(--accent-solid); font-weight: 600; text-decoration: none; }
 .bet-on-site:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.whatsapp-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 8px; padding: 7px 10px; color: #25d366; background: transparent; border: 1px solid #25d366; border-radius: var(--radius); font-weight: 600; text-decoration: none; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease; }
+.whatsapp-btn:hover { color: #fff; background: #25d366; border-color: #25d366; }
+.whatsapp-icon { flex: 0 0 auto; }
 .icon-btn { padding: 3px 9px; font-size: 16px; }
 .mobile-only { display: none; }
 .betslip-fab { display: none; }
