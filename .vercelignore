@@ -1,0 +1,14 @@
+.github/
+.playwright-mcp/
+node_modules/
+src/
+styles.css
+build.js
+package.json
+package-lock.json
+server.js
+scrape.js
+SKILL.md
+DESIGN.md
+.gitignore
+assets/*.bundle.js

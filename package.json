@@ -1,0 +1,12 @@
+{
+  "name": "sports-betting-agent",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:local": "node build.js"
+  },
+  "devDependencies": {
+    "clean-css-cli": "^5.6.3",
+    "terser": "^5.44.1"
+  }
+}

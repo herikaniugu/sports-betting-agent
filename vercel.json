@@ -1,0 +1,34 @@
+{
+  "cleanUrls": true,
+  "routes": [
+    { "src": "^/src/.*$", "status": 404 },
+    { "src": "^/styles\\.css$", "status": 404 },
+    { "src": "^/build\\.js$", "status": 404 },
+    { "src": "^/server\\.js$", "status": 404 },
+    { "src": "^/scrape\\.js$", "status": 404 },
+    { "src": "^/SKILL\\.md$", "status": 404 },
+    { "src": "^/DESIGN\\.md$", "status": 404 },
+    { "src": "^/package(-lock)?\\.json$", "status": 404 },
+    { "src": "^/vercel\\.json$", "status": 404 },
+    { "src": "^/\\.github/.*$", "status": 404 },
+    { "src": "^/assets/.*\\.bundle\\.js$", "status": 404 }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" }
+      ]
+    },
+    {
+      "source": "/data.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    }
+  ]
+}

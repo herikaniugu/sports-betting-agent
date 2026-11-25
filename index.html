@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>Sports Betting - AI Agent</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="assets/styles.min.css" />
+</head>
+<body>
+  <div id="splash" class="splash" role="status" aria-live="polite">
+    <div class="splash-card">
+      <div class="splash-mark">SPORTS BETTING</div>
+      <div class="splash-bar"><i></i></div>
+      <p id="splashText">Loading latest odds…</p>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <button id="menuToggle" class="icon-btn mobile-only" aria-label="Open menu">&#9776;</button>
+    <div class="brand">
+      <span class="brand-mark">SPORTS BETTING</span>
+      <span class="demo-pill">SPORTYBET API</span>
+    </div>
+    <div class="account">
+      <div id="dataStatus" class="data-status" aria-live="polite" title="Odds update automatically every 15 seconds"><i></i><span id="dataStatusText">Auto · updating…</span></div>
+      <button id="donateToggle" class="donate-toggle" aria-haspopup="dialog" aria-expanded="false" title="Support this project">Donate</button>
+      <button id="advisorToggle" class="advisor-toggle" aria-haspopup="dialog" aria-expanded="false" title="Open Bet Advisor for today's odds and bets">Bet Advisor</button>
+      <button id="betslipToggle" class="betslip-toggle mobile-only">Betslip (<span data-mobile-bet-count>0</span>)</button>
+    </div>
+  </header>
+
+  <div id="drawerOverlay" class="drawer-overlay"></div>
+  <button id="betslipFab" class="betslip-fab mobile-only" aria-label="Slide open betslip">Betslip (<span data-mobile-bet-count>0</span>)</button>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <span class="demo-pill">SPORTYBET API</span>
+      </div>
+      <div class="side-label">Schedule</div>
+      <div class="side-group">
+        <button class="side-title active" data-phase="today">Today Games</button>
+        <button class="side-title" data-phase="live">Live Events</button>
+        <button class="side-title" data-phase="upcoming">Upcoming Games</button>
+        <button class="side-title" data-phase="outright">Outrights</button>
+      </div>
+      <div class="side-label">Sports</div>
+      <div class="side-group sports">
+        <button class="sport active" data-sport="Football">Football</button>
+        <button class="sport" data-sport="Basketball">Basketball</button>
+        <button class="sport" data-sport="Tennis">Tennis</button>
+        <button class="sport" data-sport="eFootball">eFootball</button>
+        <button id="moreSports" class="sport">More Sports &#9660;</button>
+        <div id="extraSports" class="extra-sports" hidden>
+          <button class="sport" data-sport="Other">Table Tennis / Cricket</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section id="sportsView">
+        <div class="toolbar">
+          <div class="tabs">
+            <button class="tab active" data-market="3way">3 Way &amp; O/U</button>
+            <button class="tab" data-market="dc">Double Chance</button>
+          </div>
+          <div class="filters">
+            <label class="filter-label">Min odds
+              <input id="minOdds" type="range" min="1.05" max="3" step="0.05" value="1.3" />
+              <span id="minOddsValue">1.30</span>
+            </label>
+            <label class="filter-label">Min probability
+              <input id="minProb" type="range" min="0" max="100" step="1" value="60" />
+              <span id="minProbValue">60%</span>
+            </label>
+            <label class="filter-label">League
+              <select id="leagueFilter"><option value="all">All leagues</option></select>
+            </label>
+          </div>
+        </div>
+
+        <section class="workspace">
+          <div class="matches-panel">
+            <div class="date-row">
+              <span id="dateLabel">24/11 Tuesday</span>
+              <span class="date-heads" id="dateHeads"><i>1</i><i>X</i><i>2</i><i>Goals</i><i>Over</i><i>Under</i></span>
+            </div>
+            <div id="matches"></div>
+          </div>
+
+          <aside class="insights-panel">
+            <div class="panel-heading">
+              <div class="panel-title-row">
+                <h2>High probability picks</h2>
+                <label class="fold-limit">Max folds <input id="maxFolds" type="number" min="1" max="100" step="1" value="12" /></label>
+              </div>
+              <p id="pickSummary">Loading...</p>
+            </div>
+            <div class="fold-bar">
+              <span><b id="foldCount">0</b> folds &middot; total odds <b id="foldOdds">0.00</b></span>
+              <button id="addFolds" class="fold-btn">Add folds</button>
+            </div>
+            <div id="picks" class="picks"></div>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <aside id="betslip" class="betslip">
+      <div class="betslip-head">
+        <strong>Betslip</strong>
+        <span id="betCount">0</span>
+        <button id="clearBets" class="clear-btn">Clear</button>
+        <button id="betslipClose" class="icon-btn mobile-only" aria-label="Close betslip">&times;</button>
+      </div>
+      <div class="betslip-modes">
+        <button class="active" data-mode="single">Single</button>
+        <button data-mode="multiple">Multiple</button>
+        <button data-mode="system">System</button>
+      </div>
+      <div id="betList" class="bet-list">
+        <p class="empty-bet">Click a price to add it here.</p>
+      </div>
+      <div id="sharedStakeRow" class="stake-row" hidden>
+        <label for="stake">Stake</label>
+        <input id="stake" type="number" min="0" step="100" value="1000" />
+      </div>
+      <div class="totals">
+        <div><span id="totalOddsLabel">Total odds</span><strong id="totalOdds">0.00</strong></div>
+        <div><span>Potential win</span><strong id="potentialWin">0.00</strong></div>
+      </div>
+      <a class="bet-on-site" href="https://sportybet.com" target="_blank" rel="noopener noreferrer">Bet on site</a>
+      <div class="disclaimer">Local analysis only. No wagers are placed. © 2026 Heri Kaniugu. All rights reserved. Unauthorized copying or reuse is prohibited.</div>
+    </aside>
+  </div>
+
+  <dialog id="statsDialog" class="stats-dialog">
+    <div class="dialog-head">
+      <div>
+        <h2 id="statsDialogTitle">Statistical analysis</h2>
+        <p id="statsDialogSub">Model vs market</p>
+      </div>
+      <button id="statsDialogClose" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div id="statsDialogBody" class="dialog-body"></div>
+  </dialog>
+
+  <dialog id="donateDialog" class="donate-dialog">
+    <div class="dialog-head">
+      <div>
+        <h2>Support this project</h2>
+        <p>Direct payment details</p>
+      </div>
+      <button id="donateClose" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="dialog-body donate-body">
+      <p class="donate-intro">This software is part of the free software community. Donations are optional and help keep it maintained.</p>
+      <div class="donate-section-title">Pick amounts</div>
+      <div class="donate-amounts">
+        <button type="button" class="donate-amount" data-amount="5 USDT" data-guide="Use Binance Pay ID 61934534">5 USDT</button>
+        <button type="button" class="donate-amount" data-amount="10 USDT" data-guide="Use Binance Pay ID 61934534">10 USDT</button>
+        <button type="button" class="donate-amount" data-amount="1000 TSHS" data-guide="Use M-Pesa 0764181161 or Mixx by Yas 0670929342">1000 TSHS</button>
+        <button type="button" class="donate-amount" data-amount="5000 TSHS" data-guide="Use M-Pesa 0764181161 or Mixx by Yas 0670929342">5000 TSHS</button>
+      </div>
+      <div class="donate-custom">
+        <input id="donateCustomInput" type="text" maxlength="40" placeholder="Custom amount, e.g. 10000 TSHS" aria-label="Custom donation amount" />
+        <button id="donateCustomAdd" type="button">Add</button>
+      </div>
+      <div class="donate-option">
+        <div>
+          <span class="donate-label">M-Pesa · Heri Kaniugu</span>
+          <strong class="donate-value">0764181161</strong>
+        </div>
+        <button type="button" class="donate-copy" data-copy="0764181161">Copy</button>
+      </div>
+      <div class="donate-option">
+        <div>
+          <span class="donate-label">Mixx by Yas · Heri Kaniugu</span>
+          <strong class="donate-value">0670929342</strong>
+        </div>
+        <button type="button" class="donate-copy" data-copy="0670929342">Copy</button>
+      </div>
+      <div class="donate-option">
+        <div>
+          <span class="donate-label">Binance Pay ID · Heri Kaniugu</span>
+          <strong class="donate-value">61934534</strong>
+        </div>
+        <button type="button" class="donate-copy" data-copy="61934534">Copy</button>
+      </div>
+      <p id="donateFeedback" class="donate-feedback" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <dialog id="advisorDialog" class="advisor-dialog">
+    <div class="dialog-head">
+      <div>
+        <h2>Bet Advisor</h2>
+        <p id="advisorSub">Live snapshot · connecting</p>
+      </div>
+      <button id="advisorClose" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="advisor-body">
+      <div class="advisor-scroll">
+        <section id="advisorSummary" class="advisor-summary" aria-label="Today's bet summary"></section>
+        <div class="advisor-section-title">Quick questions</div>
+        <div id="advisorFaqs" class="advisor-faqs"></div>
+        <div id="advisorMessages" class="advisor-messages" aria-live="polite"></div>
+      </div>
+      <form id="advisorForm" class="advisor-form">
+        <input id="advisorInput" type="text" placeholder="Ask about your bets, odds, or picks" autocomplete="off" aria-label="Ask the advisor" />
+        <button type="submit">Ask</button>
+      </form>
+      <p class="advisor-note">Answers use the current market snapshot and your local slip.</p>
+    </div>
+  </dialog>
+
+  <script src="data.js"></script>
+  <script src="assets/app.min.js"></script>
+</body>
+</html>

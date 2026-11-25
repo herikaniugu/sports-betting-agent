@@ -1,0 +1,7 @@
+.playwright-mcp/
+.vercel/
+node_modules/
+data.js.tmp
+assets/app.bundle.js
+*.log
+.DS_Store
