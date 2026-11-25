@@ -24,7 +24,7 @@ Maintain a compact demo-only dashboard for public SportyBet football odds. The a
 - `api/_scrape.js`: Vercel-safe shared scraper used by `/api/data`; no filesystem writes or root-module imports.
 - `scrape.js`: shared scraper and atomic `data.js` writer; run directly with `node scrape.js`.
 - `.github/workflows/update-data.yml`: scheduled GitHub Actions scrape and commit of `data.js`.
-- `vercel.json`: Vercel static hosting config with source-path 404 routes, security headers, and `data.js` set to `no-cache`; Vercel does not build from source.
+- `vercel.json`: forces Vercel's Other preset with `framework: null`, skips the build command, serves the root directory, configures `/api/data`, blocks source paths, adds security headers, and sets `data.js` to `no-cache`.
 - `.nojekyll`: prevents GitHub Pages from ignoring static files.
 - `.gitignore`: excludes browser artifacts, logs, local Vercel state, and temp snapshots.
 - `.vercelignore`: keeps source, server, root scraper, docs, minifier tooling, and manifest files out of the static deployment; `vercel.json` blocks direct source paths.
@@ -88,7 +88,8 @@ Write `data.js` atomically: write `data.js.tmp`, then rename it over `data.js`. 
 - Static mode is automatic on `https:` and `file:` origins. On HTTP/HTTPS it first polls `/api/data` every 15 seconds and merges fresh today and live matches into `MATCHES` without a redeploy; on `file://` it polls `data.js?t=...` with script injection.
 - `?api=1` forces dynamic mode on a secure origin. `?static=1` forces static mode on a local HTTP server.
 - Scheduled GitHub Actions run every 15 minutes by default; GitHub Pages serves that committed snapshot, while Vercel also has the 15-second `/api/data` path.
-- Deployed pages expose `assets/app.min.js`, `assets/styles.min.css`, and `/api/data`; raw `src/`, `styles.css`, `scrape.js`, and tooling are blocked by Vercel 404 routes and the local server. The API function uses `api/_scrape.js` inside the function bundle. Commit regenerated assets before deploying; Vercel does not build them. Indexing is discouraged with `robots.txt`, meta robots, and `X-Robots-Tag`.
+- Deployed pages expose `assets/app.min.js`, `assets/styles.min.css`, and `/api/data`; raw `src/`, `styles.css`, `scrape.js`, and tooling are blocked by Vercel 404 routes and the local server. The API function uses `api/_scrape.js` inside the function bundle. Commit regenerated assets before deploying; Vercel does not build them or look for a Node entrypoint.
+ Indexing is discouraged with `robots.txt`, meta robots, and `X-Robots-Tag`.
 - Snapshot scraper fetches all sidebar sports: Football (`sr:sport:1`), Basketball (`sr:sport:2`), Tennis (`sr:sport:5`), eFootball (`sr:sport:137`), Table Tennis (`sr:sport:20`), and Cricket (`sr:sport:21`). Table Tennis and Cricket map to `Other`.
 
 ## Mapping rules

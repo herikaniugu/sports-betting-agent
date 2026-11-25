@@ -54,7 +54,7 @@ The browser does not call SportyBet directly. `scrape.js` uses browser-like head
 | `src/advisor.js` | Bet Advisor answers, thread, dialog modes, and listeners |
 | `src/donate.js` | Donate dialog, presets, custom amount, copy actions |
 | `src/main.js` | Initial render, sticky-height sync, bootstrap call |
-| `vercel.json` | Vercel static hosting, source-path 404 routes, security headers, and `data.js` cache headers |
+| `vercel.json` | Vercel Other preset (`framework: null`), skipped build, root output, `/api/data` function config, source-path 404 routes, and headers |
 | `.nojekyll` | Keeps all static files intact on GitHub Pages |
 | `.gitignore` | Excludes local browser artifacts, logs, Vercel state, and temp snapshots |
 | `.vercelignore` | Prevents server, root scraper, docs, and local tooling from being published by Vercel |
@@ -192,7 +192,7 @@ In dynamic mode auto update is enabled after splash bootstrap. Every 15 seconds 
 ## Security
 - Local server binds only to `127.0.0.1`, allowlists `index.html`, `data.js`, `favicon.svg`, `robots.txt`, and the two minified deploy assets, and rejects unknown/hidden paths and unsupported methods.
 - Local server and Vercel responses include `nosniff`, `no-referrer`, frame denial, a same-origin CSP, and `X-Robots-Tag: noindex, nofollow, noarchive`; `robots.txt` and the page meta tag also disallow indexing.
-- Deployment serves committed minified assets without source maps; Vercel does not build from source, `/api/data` uses `api/_scrape.js` inside the function bundle, and raw `src/*.js`, `styles.css`, `scrape.js`, and tooling return `404` via Vercel routes and the local server.
+- Deployment uses `framework: null`, an empty build command, and root output so Vercel does not look for a Node entrypoint; it serves committed minified assets without source maps, `/api/data` uses `api/_scrape.js` inside the function bundle, and raw `src/*.js`, `styles.css`, `scrape.js`, and tooling return `404` via Vercel routes and the local server.
 - `LICENSE` and the betslip notice state ownership and prohibit copying or reuse without permission. These are deterrents, not access control.
 - Scraped fields are escaped before `innerHTML`; data snapshots load through script elements without dynamic evaluation.
 - The scheduled workflow uses the built-in `GITHUB_TOKEN`; no credentials are stored in the project.
