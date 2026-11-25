@@ -7,7 +7,7 @@ build.js
 package.json
 package-lock.json
 server.js
-data.js
+/data.js
 SKILL.md
 DESIGN.md
 .gitignore
