@@ -27,6 +27,21 @@ els.maxFolds.addEventListener('change', () => {
   renderPicks();
 });
 
+document.querySelectorAll('[data-insight-tab]').forEach(button => {
+  button.addEventListener('click', () => setInsightTab(button.dataset.insightTab));
+});
+
+els.parlayLegs.addEventListener('input', event => {
+  state.parlayLegs = event.target.value;
+  renderParlays();
+});
+
+els.parlayLegs.addEventListener('change', () => {
+  state.parlayLegs = parlayLegCount();
+  els.parlayLegs.value = state.parlayLegs;
+  renderParlays();
+});
+
 function handleAdjustInput(event) {
   const input = event.target.closest('[data-adjust]');
   if (!input) return;
@@ -104,6 +119,13 @@ els.picks.addEventListener('click', event => {
     openStatsDialog(Number(statsButton.dataset.statsId));
     return;
   }
+  const toggleButton = event.target.closest('[data-pick-toggle]');
+  if (toggleButton) {
+    event.stopPropagation();
+    const item = highProbabilityMatches().slice(0, foldLimit())[Number(toggleButton.dataset.pickToggle)];
+    if (item) addBet(item.line, item.match);
+    return;
+  }
   const pick = event.target.closest('.pick');
   if (pick) selectMatch(Number(pick.dataset.id));
 });
@@ -114,6 +136,15 @@ els.picks.addEventListener('keydown', event => {
   if (!pick || event.target !== pick) return;
   event.preventDefault();
   selectMatch(Number(pick.dataset.id));
+});
+
+els.parlays.addEventListener('click', event => {
+  const button = event.target.closest('[data-parlay-index]');
+  if (!button) return;
+  const option = parlayOptions().slice(0, PARLAY_RESULT_LIMIT)[Number(button.dataset.parlayIndex)];
+  if (!option) return;
+  loadMultiple(option.legs);
+  if (window.innerWidth <= 1000 && !els.betslip.classList.contains('open')) toggleDrawer(els.betslip);
 });
 
 els.statsDialogClose.addEventListener('click', () => {
@@ -128,6 +159,7 @@ els.betList.addEventListener('click', event => {
   if (!remove) return;
   state.bets.splice(Number(remove.dataset.remove), 1);
   renderBets();
+  renderPicks();
 });
 
 els.betList.addEventListener('input', event => {
@@ -150,15 +182,18 @@ document.querySelectorAll('[data-mode]').forEach(button => {
 els.clearBets.addEventListener('click', () => {
   state.bets = [];
   renderBets();
+  renderPicks();
 });
 
-els.stake.addEventListener('input', renderBets);
+els.stake.addEventListener('input', () => {
+  renderBets();
+  renderParlays();
+});
 
-els.addFolds.addEventListener('click', () => {
-  const folds = highProbabilityMatches().slice(0, foldLimit());
-  if (!folds.length) return;
+function loadMultiple(items) {
+  if (!items.length) return;
   const seen = new Set();
-  state.bets = folds.filter(item => {
+  state.bets = items.filter(item => {
     const key = betKey(item.match, item.line.market, item.line.selection);
     if (seen.has(key)) return false;
     seen.add(key);
@@ -169,11 +204,17 @@ els.addFolds.addEventListener('click', () => {
     selection: item.line.selection,
     odds: item.line.odds,
     prob: item.line.prob,
+    modelP: Number(item.modelP ?? modelProb(item.match, modelFor(item.match), item.line)),
     stake: Number(els.stake.value) || 1000
   }));
   state.betMode = 'multiple';
   document.querySelectorAll('[data-mode]').forEach(button => button.classList.toggle('active', button.dataset.mode === 'multiple'));
   renderBets();
+  renderPicks();
+}
+
+els.addFolds.addEventListener('click', () => {
+  loadMultiple(highProbabilityMatches().slice(0, foldLimit()));
   if (window.innerWidth <= 1000 && !els.betslip.classList.contains('open')) toggleDrawer(els.betslip);
 });
 

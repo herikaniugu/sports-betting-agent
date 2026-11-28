@@ -8,23 +8,31 @@ const state = {
   market: '3way',
   betMode: 'single',
   maxFolds: 12,
+  insightTab: 'picks',
+  parlayLegs: 3,
   modelAdjust: { home: 1, away: 1 },
   bets: []
 };
 
 const OUTCOMES = ['Home', 'Draw', 'Away'];
-const DC_SELECTIONS = ['Home or Draw', 'Draw or Away', 'Home or Away'];
+const PARLAY_POOL_LIMIT = 12;
+const PARLAY_RESULT_LIMIT = 5;
 let MATCHES = [];
 const els = {
   splash: document.getElementById('splash'),
   splashText: document.getElementById('splashText'),
   matches: document.getElementById('matches'),
   picks: document.getElementById('picks'),
+  picksPanel: document.getElementById('picksPanel'),
+  parlayPanel: document.getElementById('parlayPanel'),
   pickSummary: document.getElementById('pickSummary'),
   foldCount: document.getElementById('foldCount'),
   maxFolds: document.getElementById('maxFolds'),
   foldOdds: document.getElementById('foldOdds'),
   addFolds: document.getElementById('addFolds'),
+  parlayLegs: document.getElementById('parlayLegs'),
+  parlaySummary: document.getElementById('parlaySummary'),
+  parlays: document.getElementById('parlays'),
   minOdds: document.getElementById('minOdds'),
   minOddsValue: document.getElementById('minOddsValue'),
   minProb: document.getElementById('minProb'),
@@ -45,6 +53,7 @@ const els = {
   sharedStakeRow: document.getElementById('sharedStakeRow'),
   totalOdds: document.getElementById('totalOdds'),
   totalOddsLabel: document.getElementById('totalOddsLabel'),
+  hitProbability: document.getElementById('hitProbability'),
   potentialWin: document.getElementById('potentialWin'),
   dataStatus: document.getElementById('dataStatus'),
   dataStatusText: document.getElementById('dataStatusText'),
@@ -75,6 +84,11 @@ function foldLimit() {
   const raw = Number(state.maxFolds);
   if (!String(state.maxFolds).trim() || !Number.isFinite(raw)) return 12;
   return Math.min(100, Math.max(1, Math.floor(raw)));
+}
+function parlayLegCount() {
+  const raw = Number(state.parlayLegs);
+  if (!String(state.parlayLegs).trim() || !Number.isFinite(raw)) return 3;
+  return Math.min(10, Math.max(2, Math.floor(raw)));
 }
 function sportOf(match) { return match.sport || 'Football'; }
 function phaseOf(match) { return match.phase || 'today'; }

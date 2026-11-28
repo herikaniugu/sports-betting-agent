@@ -34,8 +34,8 @@ Maintain a compact demo-only dashboard for public SportyBet multi-sport odds. Th
 - `favicon.svg`: minimal flat black circle with a white `S`.
 - `styles.css`: design tokens, sticky document-scroller layout, responsive drawers, advisor modal/chat-panel modes.
 - `src/core.js`: state, element refs, empty `MATCHES` initializer, formatting, HTML escaping.
-- `src/model.js`: odds conversion, Poisson model, groups, filters.
-- `src/render.js`: matches, picks, betslip, stats, and shared render helpers.
+- `src/model.js`: odds conversion, Poisson model, groups, filters, parlay combinations.
+- `src/render.js`: matches, picks, parlays, betslip, stats, and shared render helpers.
 - `src/events.js`: filter, tab, match, betslip, and drawer listeners.
 - `src/snapshot.js`: API-only bootstrap, status label, 15-second auto refresh.
 - `src/advisor.js`: Bet Advisor answers, thread, dialog modes, listeners.
@@ -147,12 +147,14 @@ No other data endpoints exist. There is no bootstrap endpoint, status endpoint, 
 - `market: '3way'`
 - `betMode: 'single'`
 - `maxFolds: 12`
+- `insightTab: 'picks'`
+- `parlayLegs: 3`
 
-Double chance applies only to three-way matches; two-way matches are hidden in that view. In the 3 Way & O/U tab, two-way sports rows add an empty draw cell so the Over/Under odd-cell aligns in the same column as Football.
+The Over / Under tab hides matches without O/U lines. In the 3 Way / 2 Way tab, two-way sports rows add an empty draw cell so Home and Away align under the 1 and 2 columns.
 
-Picks, high-odds badges, and folds require both `odds >= minOdds` and `prob * 100 >= minProb`. The High probability picks panel has a `Max folds` number input, default `12`, range `1-100`; it caps displayed picks, fold odds, and `Add folds`.
+The insights column switches between `High Probability Picks` and `Betslip Generator` tabs. Picks and folds require both `odds >= minOdds` and `prob * 100 >= minProb`. The High Probability Picks tab has a `Max folds` number input, default `12`, range `1-100`; it caps displayed picks, fold odds, and `Add folds`. Its Betslip Generator has a `Legs` number input defaulting to `3` (range `2-10`), builds combinations from up to 12 qualifying picks, ranks them by combined model edge, shows the top 5 with an `X% hit probability` label from normalized market probabilities, and loads a chosen combination into the multiple betslip. Each pick has an `Add` button after `Stats`; it hides once that line is in the betslip and reappears when the line is removed there.
 
-A betslip entry is unique by match ID, market, and selection. Clicking the same line again refreshes its odds/probability instead of adding a duplicate; `Add folds` also skips repeated keys.
+A betslip entry is unique by match ID, market, and selection. Clicking the same line again refreshes its odds/probability instead of adding a duplicate; `Add folds` also skips repeated keys. Betslip totals start with a `Hit Probability` label from stored market probabilities: average in Single mode, all-leg product in Multiple mode, and at-least-all-but-one probability in System mode.
 
 ## Workflow
 1. Read existing files before editing and preserve the vanilla stack.

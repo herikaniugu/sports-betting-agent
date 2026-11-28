@@ -112,7 +112,7 @@ Typical today row:
 
 Live rows add `live: true`, `minute`, `status`, and `score`. `minute` is the raw `playedSeconds` value when present, otherwise `matchStatus`, otherwise `LIVE`. Today rows do not carry a `live: false` field, and unused fields such as `period` are omitted.
 
-Missing Over/Under odds set `noOu: true` and omit `ou`, `over`, and `under`. Two-way sports rows add an empty draw cell in the 3 Way tab so their Over/Under odd-cell aligns with Football.
+Missing Over/Under odds set `noOu: true` and omit `ou`, `over`, and `under`. The Over / Under tab hides those matches. Two-way sports rows add an empty draw cell in the 3 Way / 2 Way tab so Home and Away align under the 1 and 2 columns.
 
 ## Server API
 
@@ -153,16 +153,16 @@ Covers the first paint with the text-only `SPORTS BETTING` mark, a slim animated
 Holds schedule and sport navigation. On desktop it is sticky. At `<=1000px` it becomes a fixed drawer and includes the `SPORTS BETTING` mark and `SPORTYBET API` pill.
 
 ### Toolbar
-Contains market tabs (`3way`, `dc`), min odds, min probability, and league filter. It is sticky below the topbar. Sport/phase navigation is in the sidebar; bet mode is in the betslip. Double chance applies only to three-way matches, so two-way rows are hidden in that view.
+Contains market tabs (`3way`, `ou`), min odds, min probability, and league filter. It is sticky below the topbar. Sport/phase navigation is in the sidebar; bet mode is in the betslip. Over / Under hides matches without O/U lines.
 
 ### Matches column
-Uses the main document scroller. Date and league headers stick below the toolbar. Match rows show teams, odds controls, selection state, and, for live rows, status/time and score.
+Uses the main document scroller. Date, league, and match rows share one grid so time, teams, and odds stay aligned. Date and league headers stick below the toolbar. 3 Way / 2 Way rows show 1/X/2 with an empty draw cell for two-way sports; Over / Under rows show the line under Goals and Over/Under odds in their own columns. Live rows also show status/time and score.
 
 ### Insights column
-Displays picks and folds with a `Max folds` number input defaulting to `12`. The limit caps displayed picks, total fold odds, and the bets loaded by `Add folds`. It is sticky/full-height on wide screens and stacks below the matches on narrower screens. Detailed model stats open through each pick's `Stats` button.
+Uses `High Probability Picks` and `Betslip Generator` tabs. The picks tab displays picks and folds with a `Max folds` number input defaulting to `12`; the limit caps displayed picks, total fold odds, and the bets loaded by `Add folds`. The betslip generator tab offers a `Legs` number input defaulting to `3` (range `2-10`) and ranks the top five combinations from up to 12 qualifying picks by combined model edge; `Add` loads that combination as a multiple betslip. The panel is sticky/full-height on wide screens and stacks below the matches on narrower screens. Detailed model stats open through each pick's `Stats` button, with an adjacent `Add` button that hides once the pick is in the betslip and returns after that bet is removed.
 
 ### Betslip
-Contains `Single`, `Multiple`, and `System` mode buttons, the bet list, stake input, totals, the `Bet on site` link, and a local-analysis disclaimer. Entries are unique by match ID, market, and selection; reselecting a line updates its odds/probability instead of duplicating it. It is sticky/full-height on desktop and a fixed drawer opened by the topbar `Betslip` toggle or bottom-right FAB on small screens.
+Contains `Single`, `Multiple`, and `System` mode buttons, the bet list, stake input, totals led by a `Hit Probability` label from market probabilities, the `Bet on site` link, and a local-analysis disclaimer. Entries are unique by match ID, market, and selection; reselecting a line updates its odds/probability instead of duplicating it. It is sticky/full-height on desktop and a fixed drawer opened by the topbar `Betslip` toggle or bottom-right FAB on small screens.
 
 ### Donate
 A topbar `Donate` button opens a compact modal stating that this software is part of the free software community. It names Heri Kaniugu, offers suggested amounts of `5 USDT`, `10 USDT`, `1000 TSHS`, and `5000 TSHS`, and shows M-Pesa `0764181161`, Mixx by Yas `0670929342`, and Binance Pay ID `61934534`. Selecting an amount highlights it and shows the matching payment route. A custom amount field can add another chip by currency keyword. Each payment option has a copy button with inline confirmation. Donations are optional, and the dialog displays details only and processes no payments.

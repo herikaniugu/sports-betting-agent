@@ -13,8 +13,9 @@ function initLeagues() {
 }
 
 function updateHeads() {
-  const heads = state.market === 'dc' ? ['1X', 'X2', '12', '', '', '']
-    : ['1', 'X', '2', 'Goals', 'Over', 'Under'];
+  const ouOnly = state.market === 'ou';
+  const heads = ouOnly ? ['', '', '', 'Goals', 'Over', 'Under'] : ['1', 'X', '2'];
+  els.dateHeads.className = 'date-heads ' + (ouOnly ? 'heads-ou' : 'heads-3way');
   els.dateHeads.innerHTML = heads.map(h => '<i>' + h + '</i>').join('');
   els.dateLabel.textContent = state.phase === 'live' ? 'Live events' : state.phase === 'upcoming' ? 'Upcoming games' : state.phase === 'outright' ? 'Outrights' : '24/11 Tuesday';
 }
@@ -32,32 +33,27 @@ function renderMatches() {
 
   const html = groups.map(group => {
     const rows = group.matches.map(match => {
-      const line = bestLine(match);
-      const isHigh = line.odds >= state.minOdds && line.prob * 100 >= state.minProb;
-      const badge = isHigh ? '<span class="badge-high">' + escapeHtml(dec(line.odds)) + ' ' + escapeHtml(line.selection.split(' ')[0]) + '</span>' : '';
       const selected = match.id === state.selectedId ? ' selected' : '';
       const clock = match.live ? '<span class="live-clock">' + escapeHtml(match.minute || match.status || 'LIVE') + '</span>' : '<span>' + escapeHtml(match.time) + '</span>';
       const score = match.score ? '<span class="match-score">' + escapeHtml(match.score) + '</span>' : '';
       const groupLines = activeGroup(match).lines;
-      const ouLines = allGroups(match).find(group => group.market === 'ou')?.lines || [];
-      const twoWayGroup = groupLines.length === 2 && groupLines[0].market === '3way';
+      const ouOnly = state.market === 'ou';
+      const twoWayGroup = !ouOnly && groupLines.length === 2 && groupLines[0].market === '3way';
       const button = l => '<button class="odd" data-id="' + escapeHtml(match.id) + '" data-market="' + escapeHtml(l.market) + '" data-selection="' + escapeHtml(l.selection) + '" data-odds="' + escapeHtml(l.odds) + '" data-prob="' + escapeHtml(l.prob) + '">' + escapeHtml(dec(l.odds)) + '</button>';
-      const hasOu = state.market === '3way' && ouLines.length > 0;
-      let oddsHtml = '<div class="odds' + (twoWayGroup ? ' two-way' : '') + (hasOu ? ' has-ou' : '') + '">' + groupLines.map(button).join('');
-      if (hasOu) {
-        if (twoWayGroup) oddsHtml += '<span class="odd-empty" aria-hidden="true"></span>';
-        oddsHtml += '<div class="odd-cell">' + ouLines.map(l => '<span data-id="' + escapeHtml(match.id) + '" data-market="' + escapeHtml(l.market) + '" data-selection="' + escapeHtml(l.selection) + '" data-odds="' + escapeHtml(l.odds) + '" data-prob="' + escapeHtml(l.prob) + '">' + escapeHtml(dec(l.odds)) + '</span>').join('') + '</div>';
-      }
+      let oddsHtml = '<div class="odds' + (ouOnly ? ' ou-only' : '') + '">';
+      if (ouOnly) oddsHtml += '<span class="odd-empty" aria-hidden="true"></span>'.repeat(3) + '<span class="ou-line">' + escapeHtml(match.ou) + '</span>' + groupLines.map(button).join('');
+      else if (twoWayGroup) oddsHtml += button(groupLines[0]) + '<span class="odd-empty" aria-hidden="true"></span>' + button(groupLines[1]);
+      else oddsHtml += groupLines.map(button).join('');
       oddsHtml += '</div>';
 
       return '<div class="match-row' + selected + (match.live ? ' live' : '') + '" data-id="' + escapeHtml(match.id) + '">' +
         '<div class="match-time">' + clock + '</div>' +
-        '<div class="teams"><span class="team">' + escapeHtml(match.home) + score + badge + '</span><span class="team away">' + escapeHtml(match.away) + '</span></div>' +
+        '<div class="teams"><span class="team">' + escapeHtml(match.home) + score + '</span><span class="team away">' + escapeHtml(match.away) + '</span></div>' +
         oddsHtml +
       '</div>';
     }).join('');
 
-    return '<div class="league-row"><span class="caret">&#9660;</span><span>' + escapeHtml(group.league) + '</span><span class="league-markets">' + escapeHtml(activeGroup(group.matches[0]).title) + '</span></div>' + rows;
+    return '<div class="league-row"><span class="league-name"><span class="caret">&#9660;</span><span class="league-title">' + escapeHtml(group.league) + '</span></span><span class="league-markets">' + escapeHtml(activeGroup(group.matches[0]).title) + '</span></div>' + rows;
   }).join('');
 
   els.matches.innerHTML = html || '<div class="empty-bet">No matches in this view. Try another league, sport, or tab.</div>';
@@ -75,15 +71,45 @@ function renderPicks() {
   els.addFolds.disabled = !shown.length;
   if (!shown.length) {
     els.picks.innerHTML = '<p class="empty-bet">No picks here. Lower the minimum odds or change the filters.</p>';
+    renderParlays();
     return;
   }
-  els.picks.innerHTML = shown.map(item => {
+  const slipKeys = new Set(state.bets.map(bet => betKey(bet.match, bet.market, bet.selection)));
+  els.picks.innerHTML = shown.map((item, index) => {
     const active = item.match.id === state.selectedId ? ' active' : '';
+    const inSlip = slipKeys.has(betKey(item.match, item.line.market, item.line.selection));
     return '<div class="pick' + active + '" data-id="' + escapeHtml(item.match.id) + '" role="button" tabindex="0">' +
       '<span><span class="pick-title">' + escapeHtml(item.match.home) + ' v ' + escapeHtml(item.match.away) + '</span>' +
       '<span class="pick-meta">' + escapeHtml(item.match.time) + ' &middot; ' + escapeHtml(item.line.selection) + ' &middot; ' + escapeHtml(dec(item.line.odds)) + '</span></span>' +
       '<span class="pick-prob">' + escapeHtml(pct(item.line.prob)) + '</span>' +
       '<button class="pick-stats" data-stats-id="' + escapeHtml(item.match.id) + '">Stats</button>' +
+      (inSlip ? '' : '<button class="pick-add" data-pick-toggle="' + index + '">Add</button>') +
+    '</div>';
+  }).join('');
+  renderParlays();
+}
+
+function renderParlays() {
+  const options = parlayOptions();
+  const shown = options.slice(0, PARLAY_RESULT_LIMIT);
+  const stake = Number(els.stake.value) || 0;
+  const legs = parlayLegCount();
+  els.parlaySummary.textContent = options.length
+    ? 'Top ' + shown.length + ' of ' + options.length + ' ' + legs + '-leg combinations'
+    : 'Need at least ' + legs + ' qualifying picks';
+
+  if (!shown.length) {
+    els.parlays.innerHTML = '<p class="empty-bet">No parlays yet. Widen the filters or choose fewer legs.</p>';
+    return;
+  }
+
+  els.parlays.innerHTML = shown.map((option, index) => {
+    const teams = option.legs.map(item => escapeHtml(item.match.home + ' v ' + item.match.away)).join(' &middot; ');
+    const selections = option.legs.map(item => item.line.selection + ' @ ' + dec(item.line.odds)).join(', ');
+    return '<div class="parlay">' +
+      '<div class="parlay-top"><strong>' + escapeHtml(dec(option.odds)) + '</strong><span>' + escapeHtml(pct(option.prob)) + ' hit probability</span><button class="parlay-add" data-parlay-index="' + index + '">Add</button></div>' +
+      '<div class="parlay-teams" title="' + escapeHtml(selections) + '">' + teams + '</div>' +
+      '<div class="parlay-meta">Expected Return ' + escapeHtml(dec(stake * option.odds)) + '</div>' +
     '</div>';
   }).join('');
 }
@@ -152,6 +178,21 @@ function openStatsDialog(id) {
   }, 0);
 }
 
+function slipHitProbability(bets, mode) {
+  if (!bets.length) return 0;
+  const probs = bets.map(bet => Number(bet.prob) || 0);
+  if (mode === 'single') return probs.reduce((sum, prob) => sum + prob, 0) / probs.length;
+  if (mode === 'multiple') return probs.reduce((acc, prob) => acc * prob, 1);
+  const distribution = Array(probs.length + 1).fill(0);
+  distribution[0] = 1;
+  probs.forEach((prob, index) => {
+    for (let wins = index + 1; wins >= 1; wins--) distribution[wins] = distribution[wins] * (1 - prob) + distribution[wins - 1] * prob;
+    distribution[0] *= 1 - prob;
+  });
+  const needed = Math.max(1, probs.length - 1);
+  return Math.min(1, Math.max(0, distribution.slice(needed).reduce((sum, value) => sum + value, 0)));
+}
+
 function computeBetTotals(bets, mode, sharedStake) {
   const count = bets.length;
   let totalStake = 0;
@@ -194,7 +235,7 @@ function computeBetTotals(bets, mode, sharedStake) {
     }
   }
 
-  return { count, totalStake, totalOdds: total, potentialWin: win, label };
+  return { count, totalStake, totalOdds: total, potentialWin: win, hit: slipHitProbability(bets, mode), label };
 }
 
 function renderBets() {
@@ -215,6 +256,7 @@ function renderBets() {
   }
 
   const totals = computeBetTotals(state.bets, state.betMode, els.stake.value);
+  els.hitProbability.textContent = pct(totals.hit);
   els.totalOddsLabel.textContent = totals.label;
   els.totalOdds.textContent = count ? dec(totals.totalOdds) : '0.00';
   els.potentialWin.textContent = count ? dec(totals.potentialWin) : '0.00';
@@ -228,10 +270,13 @@ function addBet(line, match) {
   if (!match) return;
   const key = betKey(match, line.market, line.selection);
   const existing = state.bets.find(bet => betKey(bet.match, bet.market, bet.selection) === key);
+  const modelP = modelProb(match, modelFor(match), line);
   if (existing) {
     existing.odds = Number(line.odds);
     existing.prob = Number(line.prob);
+    existing.modelP = modelP;
     renderBets();
+    renderPicks();
     return;
   }
   state.bets.push({
@@ -240,9 +285,11 @@ function addBet(line, match) {
     selection: line.selection,
     odds: Number(line.odds),
     prob: Number(line.prob),
+    modelP,
     stake: Number(els.stake.value) || 1000
   });
   renderBets();
+  renderPicks();
 }
 
 function selectMatch(id) {
@@ -274,6 +321,18 @@ function toggleDrawer(element) {
     els.overlay.classList.add('visible');
     syncDrawerButtons();
   }
+}
+
+function setInsightTab(tab) {
+  state.insightTab = tab;
+  document.querySelectorAll('[data-insight-tab]').forEach(button => {
+    const active = button.dataset.insightTab === tab;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  els.picksPanel.hidden = tab !== 'picks';
+  els.parlayPanel.hidden = tab !== 'parlay';
+  if (tab === 'parlay') renderParlays();
 }
 
 function renderAll() {

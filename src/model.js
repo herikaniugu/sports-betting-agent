@@ -125,21 +125,11 @@ function allGroups(match) {
     });
   } else {
     groups.push({
-      title: '1X2 moneyline',
+      title: 'Home / Draw / Away',
       market: '3way',
       lines: p.map((prob, i) => ({ market: '3way', selection: OUTCOMES[i], odds: match.odds[i], prob }))
     });
-    const dcPairs = [p[0] + p[1], p[1] + p[2], p[0] + p[2]];
-    const dcLines = DC_SELECTIONS.map((selection, index) => {
-      const odds = Number(match.dc?.[selection]) || fair(dcPairs[index]);
-      return { market: 'dc', selection, odds: Number(odds.toFixed(2)), rawProb: 1 / odds };
-    });
-    const dcTotal = dcLines.reduce((sum, line) => sum + line.rawProb, 0);
-    groups.push({
-      title: 'Double chance',
-      market: 'dc',
-      lines: dcLines.map(({ rawProb, ...line }) => ({ ...line, prob: rawProb / dcTotal }))
-    });
+
   }
 
   if (!match.noOu) {
@@ -170,7 +160,7 @@ function bestLine(match) {
 function visibleMatches() {
   return MATCHES.filter(match => {
     if (sportOf(match) !== state.sport) return false;
-    if (state.market === 'dc' && isTwoWay(match)) return false;
+    if (state.market === 'ou' && match.noOu) return false;
     if (state.phase === 'live') {
       if (!match.live) return false;
     } else if (phaseOf(match) !== state.phase) {
@@ -186,4 +176,36 @@ function highProbabilityMatches() {
     .map(match => ({ match, line: bestLine(match) }))
     .filter(item => item.line.odds >= state.minOdds && item.line.prob * 100 >= state.minProb)
     .sort((a, b) => b.line.prob - a.line.prob);
+}
+
+function parlayPool() {
+  return highProbabilityMatches().slice(0, Math.min(foldLimit(), PARLAY_POOL_LIMIT)).map(item => {
+    const modelProbValue = modelProb(item.match, modelFor(item.match), item.line);
+    return { ...item, modelP: modelProbValue, edge: modelProbValue * item.line.odds - 1 };
+  });
+}
+
+function parlayOptions() {
+  const pool = parlayPool();
+  const legs = parlayLegCount();
+  const results = [];
+  const selected = [];
+
+  function build(start) {
+    if (selected.length === legs) {
+      const odds = selected.reduce((acc, item) => acc * item.line.odds, 1);
+      const prob = selected.reduce((acc, item) => acc * item.line.prob, 1);
+      const modelProbValue = selected.reduce((acc, item) => acc * item.modelP, 1);
+      results.push({ legs: selected.slice(), odds, prob, edge: modelProbValue * odds - 1 });
+      return;
+    }
+    for (let i = start; i <= pool.length - (legs - selected.length); i++) {
+      selected.push(pool[i]);
+      build(i + 1);
+      selected.pop();
+    }
+  }
+
+  if (pool.length >= legs) build(0);
+  return results.sort((a, b) => b.edge - a.edge || b.odds - a.odds);
 }

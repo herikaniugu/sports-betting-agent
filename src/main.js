@@ -18,6 +18,7 @@ if (typeof ResizeObserver !== 'undefined') {
 
 syncStickyHeights();
 els.maxFolds.value = foldLimit();
+setInsightTab(state.insightTab);
 document.querySelectorAll('input[type="range"]').forEach(syncRangeFill);
 initLeagues();
 syncDrawerButtons();
